@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import heroImage from "@/assets/hero-fps.jpg";
+import cs2Intro from "@/assets/cs2-intro.jpg";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { Cpu, Monitor, MemoryStick, Zap, Gamepad2, Gauge, Rocket, Sun, Moon, Crosshair, Sword, Car, Cuboid } from "lucide-react";
+import { Cpu, Monitor, MemoryStick, Zap, Gamepad2, Gauge, Rocket, Sun, Moon, Crosshair, Sword, Car, Cuboid, Settings } from "lucide-react";
 
 
 type TaskKey = "cpu" | "gpu" | "ram" | "input" | "lowlatency" | "vsync" | "gamemode" | "cache";
@@ -35,6 +39,16 @@ const Index = () => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  const [developerMode, setDeveloperMode] = useState(false);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [autoDestroy, setAutoDestroy] = useState<boolean>(() => localStorage.getItem("autoDestroy") === "1");
+  useEffect(() => { localStorage.setItem("autoDestroy", autoDestroy ? "1" : "0"); }, [autoDestroy]);
+  const [testMode200, setTestMode200] = useState(false);
+  const APP_VERSION = "v1.0.0";
+
 
   useEffect(() => {
     document.title = "FPS Booster & 0 Delay Optimizer | Gaming Performance";
@@ -213,6 +227,29 @@ const gamesPretty = useMemo(() => ({
             >
               {theme === "dark" ? <Sun /> : <Moon />}
             </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" aria-label="Ustawienia" title="Ustawienia">
+                  <Settings />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Tryb developera</span>
+                    <Switch checked={developerMode} onCheckedChange={setDeveloperMode} aria-label="Tryb developera" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Wersja aplikacji</span>
+                    <span className="text-xs text-muted-foreground">{APP_VERSION}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Tryb auto zniszczenia</span>
+                    <Switch checked={autoDestroy} onCheckedChange={setAutoDestroy} aria-label="Tryb auto zniszczenia" />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <span className="text-sm text-muted-foreground">Auto Boost</span>
             <Switch checked={autoBoost} onCheckedChange={updateAutoBoost} aria-label="Auto Boost" />
           </div>
@@ -258,6 +295,7 @@ const gamesPretty = useMemo(() => ({
               <TabsTrigger value="roblox">Roblox</TabsTrigger>
             </TabsList>
             <TabsContent value="cs2">
+              <img src={cs2Intro} alt="Counter‑Strike 2 intro — profil optymalizacji" className="mb-4 w-full rounded-md shadow" loading="lazy" />
               <GameCard g="cs2" />
             </TabsContent>
             <TabsContent value="fortnite">
@@ -285,6 +323,65 @@ const gamesPretty = useMemo(() => ({
             Uwaga: to aplikacja webowa – przedstawione działania są symulowane (bez modyfikacji systemu/sterowników).
           </p>
         </section>
+
+        {(developerMode || adminUnlocked) && (
+          <section className="container pb-16">
+            <h2 className="text-2xl font-semibold mb-6">Zaawansowane</h2>
+            <Tabs defaultValue={developerMode ? "dev" : "admin"} className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="dev" disabled={!developerMode}>Developer</TabsTrigger>
+                <TabsTrigger value="admin" disabled={!adminUnlocked}>Admin</TabsTrigger>
+              </TabsList>
+              <TabsContent value="dev">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Button variant="outline">CPU 100%</Button>
+                  <Button variant="outline">GPU 100%</Button>
+                  <Button variant="outline">Optymalizacja BIOS</Button>
+                </div>
+                <div className="mt-4">
+                  <Button variant="hero" onClick={() => setPasswordOpen(true)}>Włącz tryb admina</Button>
+                </div>
+              </TabsContent>
+              <TabsContent value="admin">
+                <div className="flex flex-col gap-4">
+                  <p className="text-sm text-muted-foreground">Status: {testMode200 ? "Testowy 200% aktywny" : "Wyłączony"}</p>
+                  <Button variant="destructive" onClick={() => setTestMode200((v) => !v)}>
+                    Tryb Testowy optymalizacja 200%
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </section>
+        )}
+
+        <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Włącz tryb admina</DialogTitle>
+              <DialogDescription>Podaj hasło, aby odblokować tryb administratora.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input type="password" placeholder="Hasło" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} />
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  if (passwordInput === "3323") {
+                    setAdminUnlocked(true);
+                    setPasswordOpen(false);
+                    setPasswordInput("");
+                    toast({ title: "Tryb admina", description: "Odblokowano tryb administratora." });
+                  } else {
+                    toast({ title: "Błędne hasło", description: "Nieprawidłowe hasło.", variant: "destructive" });
+                  }
+                }}
+              >
+                Potwierdź
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </main>
     </div>
   );
