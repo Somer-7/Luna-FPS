@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import heroImage from "@/assets/hero-fps.jpg";
-import cs2Intro from "@/assets/cs2-intro.jpg";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Cpu, Monitor, MemoryStick, Zap, Gamepad2, Gauge, Rocket, Sun, Moon, Crosshair, Sword, Car, Cuboid, Settings } from "lucide-react";
 
@@ -40,6 +41,11 @@ const Index = () => {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  const [language, setLanguage] = useState<string>(() => localStorage.getItem("lang") || "pl");
+  useEffect(() => { localStorage.setItem("lang", language); }, [language]);
+  const langLabels: Record<string, string> = { pl: "Polski", en: "English", es: "Español", tr: "Türkçe", de: "Deutsch", fr: "Français" };
+  const langFlags: Record<string, string> = { pl: "🇵🇱", en: "🇬🇧", es: "🇪🇸", tr: "🇹🇷", de: "🇩🇪", fr: "🇫🇷" };
+
   const [developerMode, setDeveloperMode] = useState(false);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -49,9 +55,23 @@ const Index = () => {
   const [testMode200, setTestMode200] = useState(false);
   const APP_VERSION = "v1.0.0";
 
-
+  const [offAllSettings, setOffAllSettings] = useState(false);
+  const offAll = (val: boolean) => {
+    setOffAllSettings(val);
+    if (val) {
+      timers.current.forEach((id) => window.clearInterval(id));
+      timers.current.clear();
+      setTasks({ cpu: 0, gpu: 0, ram: 0, input: 0, lowlatency: 0, vsync: 0, gamemode: 0, cache: 0 });
+      gameTimers.current.forEach((id) => window.clearInterval(id));
+      gameTimers.current.clear();
+      setGameTasks({ cs2: 0, fortnite: 0, gtav: 0, roblox: 0 });
+      setTestMode200(false);
+      updateAutoBoost(false);
+      toast({ title: "Wyłączono ustawienia", description: "Wszystkie działania zatrzymane." });
+    }
+  };
   useEffect(() => {
-    document.title = "FPS Booster & 0 Delay Optimizer | Gaming Performance";
+    document.title = "Luna FPS — FPS Booster & 0 Delay Optimizer";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", "Zwiększ FPS i zredukuj opóźnienia: CPU/GPU/RAM optymalizacja, Auto Boost, 0 Delay (Low Latency, brak V‑Sync, czyszczenie cache).");
   }, []);
@@ -155,7 +175,7 @@ const gamesPretty = useMemo(() => ({
     const running = tasks[k] > 0 && tasks[k] < 100;
     const done = tasks[k] >= 100;
     return (
-      <Card className="card-elevated">
+      <Card className="card-elevated animate-fade-in">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Icon className="shrink-0" />
@@ -164,11 +184,11 @@ const gamesPretty = useMemo(() => ({
           <CardDescription>{pretty[k].desc}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Progress value={tasks[k]} />
+          <Progress value={tasks[k]} variant={testMode200 ? "danger" : "default"} />
         </CardContent>
         <CardFooter className="justify-between gap-3">
           <div className="text-sm text-muted-foreground">
-            {running ? "W trakcie…" : done ? "Zakończono" : "Gotowe do startu"}
+            {running ? "W trakcie…" : done ? (testMode200 ? "Zakończono — zastosowano 200%" : "Zakończono") : "Gotowe do startu"}
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => disableTask(k, pretty[k].title)}>
@@ -188,7 +208,7 @@ const gamesPretty = useMemo(() => ({
     const running = gameTasks[g] > 0 && gameTasks[g] < 100;
     const done = gameTasks[g] >= 100;
     return (
-      <Card className="card-elevated">
+      <Card className="card-elevated animate-fade-in">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Icon className="shrink-0" />
@@ -197,7 +217,7 @@ const gamesPretty = useMemo(() => ({
           <CardDescription>{gamesPretty[g].desc}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Progress value={gameTasks[g]} />
+          <Progress value={gameTasks[g]} variant={testMode200 ? "danger" : "default"} />
         </CardContent>
         <CardFooter className="justify-between gap-3">
           <div className="text-sm text-muted-foreground">
@@ -210,13 +230,36 @@ const gamesPretty = useMemo(() => ({
         </CardFooter>
       </Card>
     );
+};
+
+  const AdvancedGameOptions = () => {
+    return (
+      <Card className="card-elevated animate-fade-in">
+        <CardHeader>
+          <CardTitle>Tryb zaawansowany</CardTitle>
+          <CardDescription>Skalowanie i wygładzenie obrazu</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex items-center justify-between">
+              <span>Skalowanie</span>
+              <Switch aria-label="Skalowanie" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Wygładzenie</span>
+              <Switch aria-label="Wygładzenie" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
     <div className="min-h-screen bg-background">
       <header className="container py-6">
         <nav className="flex items-center justify-between">
-          <div className="text-lg font-semibold">FPS Booster</div>
+          <div className="text-lg font-semibold">Luna FPS</div>
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
@@ -246,6 +289,26 @@ const gamesPretty = useMemo(() => ({
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Tryb auto zniszczenia</span>
                     <Switch checked={autoDestroy} onCheckedChange={setAutoDestroy} aria-label="Tryb auto zniszczenia" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Język <span className="ml-1">{langFlags[language]}</span></span>
+                    <Select value={language} onValueChange={setLanguage}>
+                      <SelectTrigger className="w-36">
+                        <SelectValue placeholder="Wybierz język" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pl">🇵🇱 Polski</SelectItem>
+                        <SelectItem value="en">🇬🇧 English</SelectItem>
+                        <SelectItem value="es">🇪🇸 Español</SelectItem>
+                        <SelectItem value="tr">🇹🇷 Türkçe</SelectItem>
+                        <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
+                        <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Off all settings</span>
+                    <Switch checked={offAllSettings} onCheckedChange={offAll} aria-label="Off all settings" />
                   </div>
                 </div>
               </PopoverContent>
@@ -295,17 +358,20 @@ const gamesPretty = useMemo(() => ({
               <TabsTrigger value="roblox">Roblox</TabsTrigger>
             </TabsList>
             <TabsContent value="cs2">
-              <img src={cs2Intro} alt="Counter‑Strike 2 intro — profil optymalizacji" className="mb-4 w-full rounded-md shadow" loading="lazy" />
               <GameCard g="cs2" />
+              <div className="mt-4"><AdvancedGameOptions /></div>
             </TabsContent>
             <TabsContent value="fortnite">
               <GameCard g="fortnite" />
+              <div className="mt-4"><AdvancedGameOptions /></div>
             </TabsContent>
             <TabsContent value="gtav">
               <GameCard g="gtav" />
+              <div className="mt-4"><AdvancedGameOptions /></div>
             </TabsContent>
             <TabsContent value="roblox">
               <GameCard g="roblox" />
+              <div className="mt-4"><AdvancedGameOptions /></div>
             </TabsContent>
           </Tabs>
         </section>
@@ -320,7 +386,7 @@ const gamesPretty = useMemo(() => ({
             <ActionCard k="cache" />
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
-            Uwaga: to aplikacja webowa – przedstawione działania są symulowane (bez modyfikacji systemu/sterowników).
+            Aplikacja jest w trybie testowym – może zawierać błędy. Administratorzy skupiają się obecnie głównie na interfejsie.
           </p>
         </section>
 
@@ -333,7 +399,7 @@ const gamesPretty = useMemo(() => ({
                 <TabsTrigger value="admin" disabled={!adminUnlocked}>Admin</TabsTrigger>
               </TabsList>
               <TabsContent value="dev">
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-3 animate-fade-in">
                   <Button variant="outline">CPU 100%</Button>
                   <Button variant="outline">GPU 100%</Button>
                   <Button variant="outline">Optymalizacja BIOS</Button>
@@ -343,7 +409,7 @@ const gamesPretty = useMemo(() => ({
                 </div>
               </TabsContent>
               <TabsContent value="admin">
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 animate-fade-in">
                   <p className="text-sm text-muted-foreground">Status: {testMode200 ? "Testowy 200% aktywny" : "Wyłączony"}</p>
                   <Button variant="destructive" onClick={() => setTestMode200((v) => !v)}>
                     Tryb Testowy optymalizacja 200%
