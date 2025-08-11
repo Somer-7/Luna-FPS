@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import heroImage from "@/assets/hero-fps.jpg";
+import advancedImage from "@/assets/advanced-mode.jpg";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,8 @@ type GameKey = "cs2" | "fortnite" | "gtav" | "roblox";
 type TaskState = Record<TaskKey, number>;
 
 type GameTaskState = Record<GameKey, number>;
+type DevKey = "devCpu" | "devGpu" | "bios";
+type DevTaskState = Record<DevKey, number>;
 
 const Index = () => {
   const [autoBoost, setAutoBoost] = useState<boolean>(() => localStorage.getItem("autoBoost") === "1");
@@ -29,6 +32,11 @@ const Index = () => {
 
   const [gameTasks, setGameTasks] = useState<GameTaskState>({ cs2: 0, fortnite: 0, gtav: 0, roblox: 0 });
   const gameTimers = useRef<Map<GameKey, number>>(new Map());
+
+  const [devTasks, setDevTasks] = useState<DevTaskState>({ devCpu: 0, devGpu: 0, bios: 0 });
+  const devTimers = useRef<Map<DevKey, number>>(new Map());
+  const [adminAction, setAdminAction] = useState<number>(0);
+  const adminTimer = useRef<number | null>(null);
 
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     const saved = localStorage.getItem("theme");
@@ -127,6 +135,32 @@ const disableTask = (key: TaskKey, label?: string) => {
   toast({ title: label ?? pretty[key].title, description: "Wyłączono / przywrócono ustawienia." });
 };
 
+// Dev/Admin działania ładowania
+const runDevTask = (key: DevKey, label: string, duration = 1500) => {
+  if (devTimers.current.get(key)) return;
+  setDevTasks((t) => ({ ...t, [key]: 0 }));
+  const start = Date.now();
+  const tick = () => {
+    const p = Math.min(100, Math.round(((Date.now() - start) / duration) * 100));
+    setDevTasks((t) => ({ ...t, [key]: p }));
+    if (p >= 100) {
+      const id = devTimers.current.get(key);
+      if (id) window.clearInterval(id);
+      devTimers.current.delete(key);
+      toast({ title: label, description: "Zakończono pomyślnie" });
+    }
+  };
+  const id = window.setInterval(tick, 60);
+  devTimers.current.set(key, id);
+};
+
+const disableDevTask = (key: DevKey, label: string) => {
+  const id = devTimers.current.get(key);
+  if (id) { window.clearInterval(id); devTimers.current.delete(key); }
+  setDevTasks((t) => ({ ...t, [key]: 0 }));
+  toast({ title: label, description: "Wyłączono / przywrócono ustawienia." });
+};
+
 const runGameProfile = (key: GameKey, label: string, duration = 2200) => {
   if (gameTimers.current.get(key)) return;
   setGameTasks((g) => ({ ...g, [key]: 0 }));
@@ -170,6 +204,12 @@ const gamesPretty = useMemo(() => ({
   roblox: { icon: Cuboid, title: "Roblox", desc: "Profil FPS: lekkość klienta, mniejsze opóźnienia." },
 }), []);
 
+const devPretty = useMemo(() => ({
+  devCpu: { icon: Cpu, title: "CPU 100%", desc: "Symulacja pełnego obciążenia CPU." },
+  devGpu: { icon: Monitor, title: "GPU 100%", desc: "Symulacja pełnego obciążenia GPU." },
+  bios: { icon: Settings, title: "Optymalizacja BIOS", desc: "Symulacja optymalizacji ustawień firmware." },
+}), []);
+
   const ActionCard = ({ k }: { k: TaskKey }) => {
     const Icon = pretty[k].icon;
     const running = tasks[k] > 0 && tasks[k] < 100;
@@ -203,6 +243,35 @@ const gamesPretty = useMemo(() => ({
     );
   };
 
+  const DevActionCard = ({ d }: { d: DevKey }) => {
+    const Icon = devPretty[d].icon;
+    const running = devTasks[d] > 0 && devTasks[d] < 100;
+    const done = devTasks[d] >= 100;
+    return (
+      <Card className="card-elevated animate-fade-in">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Icon className="shrink-0" />
+            <CardTitle>{devPretty[d].title}</CardTitle>
+          </div>
+          <CardDescription>{devPretty[d].desc}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Progress value={devTasks[d]} variant={testMode200 ? "danger" : "default"} />
+        </CardContent>
+        <CardFooter className="justify-between gap-3">
+          <div className="text-sm text-muted-foreground">
+            {running ? "W trakcie…" : done ? (testMode200 ? "Zakończono — zastosowano 200%" : "Zakończono") : "Gotowe do startu"}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => disableDevTask(d, devPretty[d].title)}>Wyłącz</Button>
+            <Button variant="hero" onClick={() => runDevTask(d, devPretty[d].title)} disabled={running}>{done ? "Uruchom ponownie" : running ? "Pracuję" : "Uruchom"}</Button>
+          </div>
+        </CardFooter>
+      </Card>
+    );
+  };
+
   const GameCard = ({ g }: { g: GameKey }) => {
     const Icon = gamesPretty[g].icon;
     const running = gameTasks[g] > 0 && gameTasks[g] < 100;
@@ -230,7 +299,7 @@ const gamesPretty = useMemo(() => ({
         </CardFooter>
       </Card>
     );
-};
+  };
 
   const AdvancedGameOptions = () => {
     return (
@@ -240,6 +309,7 @@ const gamesPretty = useMemo(() => ({
           <CardDescription>Skalowanie i wygładzenie obrazu</CardDescription>
         </CardHeader>
         <CardContent>
+          <img src={advancedImage} alt="Tryb zaawansowany — grafika Luna FPS" className="mb-4 w-full rounded-md shadow" loading="lazy" />
           <div className="grid gap-4 md:grid-cols-2">
             <div className="flex items-center justify-between">
               <span>Skalowanie</span>
@@ -390,6 +460,20 @@ const gamesPretty = useMemo(() => ({
           </p>
         </section>
 
+        <section className="container pb-16">
+          <h2 className="text-2xl font-semibold mb-6">Ściąga Luna FPS</h2>
+          <Card className="card-elevated animate-fade-in">
+            <CardContent className="pt-6">
+              <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
+                <li>Auto Boost — automatycznie uruchamia wszystkie optymalizacje.</li>
+                <li>Off all settings — zatrzymuje i resetuje wszystkie działania.</li>
+                <li>Tryb 200% — czerwone paski, maksymalne ustawienia testowe.</li>
+                <li>Tryb zaawansowany — skalowanie i wygładzenie obrazu dla każdej gry.</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </section>
+
         {(developerMode || adminUnlocked) && (
           <section className="container pb-16">
             <h2 className="text-2xl font-semibold mb-6">Zaawansowane</h2>
@@ -400,9 +484,9 @@ const gamesPretty = useMemo(() => ({
               </TabsList>
               <TabsContent value="dev">
                 <div className="grid gap-4 md:grid-cols-3 animate-fade-in">
-                  <Button variant="outline">CPU 100%</Button>
-                  <Button variant="outline">GPU 100%</Button>
-                  <Button variant="outline">Optymalizacja BIOS</Button>
+                  <DevActionCard d="devCpu" />
+                  <DevActionCard d="devGpu" />
+                  <DevActionCard d="bios" />
                 </div>
                 <div className="mt-4">
                   <Button variant="hero" onClick={() => setPasswordOpen(true)}>Włącz tryb admina</Button>
@@ -411,7 +495,26 @@ const gamesPretty = useMemo(() => ({
               <TabsContent value="admin">
                 <div className="flex flex-col gap-4 animate-fade-in">
                   <p className="text-sm text-muted-foreground">Status: {testMode200 ? "Testowy 200% aktywny" : "Wyłączony"}</p>
-                  <Button variant="destructive" onClick={() => setTestMode200((v) => !v)}>
+                  {adminAction > 0 && adminAction < 100 && (
+                    <Progress value={adminAction} variant={testMode200 ? "danger" : "default"} />
+                  )}
+                  <Button variant="destructive" onClick={() => {
+                    if (adminTimer.current) { window.clearInterval(adminTimer.current); adminTimer.current = null; }
+                    setAdminAction(0);
+                    const start = Date.now();
+                    const duration = 1000;
+                    const tick = () => {
+                      const p = Math.min(100, Math.round(((Date.now() - start) / duration) * 100));
+                      setAdminAction(p);
+                      if (p >= 100) {
+                        if (adminTimer.current) window.clearInterval(adminTimer.current);
+                        adminTimer.current = null;
+                        setTestMode200((v) => !v);
+                      }
+                    };
+                    const id = window.setInterval(tick, 60);
+                    adminTimer.current = id;
+                  }}>
                     Tryb Testowy optymalizacja 200%
                   </Button>
                 </div>
