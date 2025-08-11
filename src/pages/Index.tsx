@@ -224,7 +224,7 @@ const devPretty = useMemo(() => ({
           <CardDescription>{pretty[k].desc}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Progress value={tasks[k]} variant={testMode200 ? "danger" : "default"} />
+          <Progress value={tasks[k]} variant={testMode200 ? "danger" : "default"} glow={testMode200} />
         </CardContent>
         <CardFooter className="justify-between gap-3">
           <div className="text-sm text-muted-foreground">
@@ -257,7 +257,7 @@ const devPretty = useMemo(() => ({
           <CardDescription>{devPretty[d].desc}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Progress value={devTasks[d]} variant={testMode200 ? "danger" : "default"} />
+          <Progress value={devTasks[d]} variant={testMode200 ? "danger" : "default"} glow={testMode200} />
         </CardContent>
         <CardFooter className="justify-between gap-3">
           <div className="text-sm text-muted-foreground">
@@ -286,7 +286,7 @@ const devPretty = useMemo(() => ({
           <CardDescription>{gamesPretty[g].desc}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Progress value={gameTasks[g]} variant={testMode200 ? "danger" : "default"} />
+          <Progress value={gameTasks[g]} variant={testMode200 ? "danger" : "default"} glow={testMode200} />
         </CardContent>
         <CardFooter className="justify-between gap-3">
           <div className="text-sm text-muted-foreground">
@@ -377,6 +377,14 @@ const devPretty = useMemo(() => ({
                     </Select>
                   </div>
                   <div className="flex items-center justify-between">
+                    <span className="text-sm">Tryb admina</span>
+                    {adminUnlocked ? (
+                      <Button variant="outline" size="sm" onClick={() => setAdminUnlocked(false)}>Zablokuj</Button>
+                    ) : (
+                      <Button variant="hero" size="sm" onClick={() => setPasswordOpen(true)}>Odblokuj</Button>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
                     <span className="text-sm">Off all settings</span>
                     <Switch checked={offAllSettings} onCheckedChange={offAll} aria-label="Off all settings" />
                   </div>
@@ -420,30 +428,24 @@ const devPretty = useMemo(() => ({
 
         <section className="container pb-16">
           <h2 className="text-2xl font-semibold mb-6">Optymalizacje gier</h2>
-          <Tabs defaultValue="cs2" className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="cs2">CS2</TabsTrigger>
-              <TabsTrigger value="fortnite">Fortnite</TabsTrigger>
-              <TabsTrigger value="gtav">GTA V</TabsTrigger>
-              <TabsTrigger value="roblox">Roblox</TabsTrigger>
-            </TabsList>
-            <TabsContent value="cs2">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
               <GameCard g="cs2" />
               <div className="mt-4"><AdvancedGameOptions /></div>
-            </TabsContent>
-            <TabsContent value="fortnite">
+            </div>
+            <div>
               <GameCard g="fortnite" />
               <div className="mt-4"><AdvancedGameOptions /></div>
-            </TabsContent>
-            <TabsContent value="gtav">
+            </div>
+            <div>
               <GameCard g="gtav" />
               <div className="mt-4"><AdvancedGameOptions /></div>
-            </TabsContent>
-            <TabsContent value="roblox">
+            </div>
+            <div>
               <GameCard g="roblox" />
               <div className="mt-4"><AdvancedGameOptions /></div>
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         </section>
 
         <section className="container pb-16">
@@ -456,7 +458,7 @@ const devPretty = useMemo(() => ({
             <ActionCard k="cache" />
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
-            Aplikacja jest w trybie testowym – może zawierać błędy. Administratorzy skupiają się obecnie głównie na interfejsie.
+            Strona jest w trybie bety i jest ciągle dopracowywana, więc błędy mogą być nieuniknione.
           </p>
         </section>
 
@@ -477,28 +479,26 @@ const devPretty = useMemo(() => ({
         {(developerMode || adminUnlocked) && (
           <section className="container pb-16">
             <h2 className="text-2xl font-semibold mb-6">Zaawansowane</h2>
-            <Tabs defaultValue={developerMode ? "dev" : "admin"} className="w-full">
-              <TabsList className="mb-4">
-                <TabsTrigger value="dev" disabled={!developerMode}>Developer</TabsTrigger>
-                <TabsTrigger value="admin" disabled={!adminUnlocked}>Admin</TabsTrigger>
-              </TabsList>
-              <TabsContent value="dev">
-                <div className="grid gap-4 md:grid-cols-3 animate-fade-in">
-                  <DevActionCard d="devCpu" />
-                  <DevActionCard d="devGpu" />
-                  <DevActionCard d="bios" />
-                </div>
-                <div className="mt-4">
-                  <Button variant="hero" onClick={() => setPasswordOpen(true)}>Włącz tryb admina</Button>
-                </div>
-              </TabsContent>
-              <TabsContent value="admin">
-                <div className="flex flex-col gap-4 animate-fade-in">
-                  <p className="text-sm text-muted-foreground">Status: {testMode200 ? "Testowy 200% aktywny" : "Wyłączony"}</p>
-                  {adminAction > 0 && adminAction < 100 && (
-                    <Progress value={adminAction} variant={testMode200 ? "danger" : "default"} />
-                  )}
-                  <Button variant="destructive" onClick={() => {
+
+            {developerMode && (
+              <div className="grid gap-4 md:grid-cols-3 animate-fade-in">
+                <DevActionCard d="devCpu" />
+                <DevActionCard d="devGpu" />
+                <DevActionCard d="bios" />
+              </div>
+            )}
+
+            <div className="mt-10 animate-fade-in">
+              <h3 className="text-xl font-semibold mb-4">Admin</h3>
+              <div className="flex flex-col gap-4">
+                <p className="text-sm text-muted-foreground">Status: {testMode200 ? "Testowy 200% aktywny" : (adminUnlocked ? "Wyłączony" : "Zablokowany — odblokuj w Ustawieniach")}</p>
+                {adminAction > 0 && adminAction < 100 && (
+                  <Progress value={adminAction} variant={testMode200 ? "danger" : "default"} glow={testMode200} />
+                )}
+                <Button
+                  variant="destructive"
+                  disabled={!adminUnlocked}
+                  onClick={() => {
                     if (adminTimer.current) { window.clearInterval(adminTimer.current); adminTimer.current = null; }
                     setAdminAction(0);
                     const start = Date.now();
@@ -514,12 +514,13 @@ const devPretty = useMemo(() => ({
                     };
                     const id = window.setInterval(tick, 60);
                     adminTimer.current = id;
-                  }}>
-                    Tryb Testowy optymalizacja 200%
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+                  }}
+                  title={!adminUnlocked ? "Odblokuj tryb admina w Ustawieniach" : undefined}
+                >
+                  Tryb Testowy optymalizacja 200%
+                </Button>
+              </div>
+            </div>
           </section>
         )}
 
