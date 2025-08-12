@@ -303,21 +303,45 @@ const devPretty = useMemo(() => ({
 
   const AdvancedGameOptions = () => {
     return (
-      <Card className="card-elevated animate-fade-in">
+      <Card className="card-elevated glass animate-fade-in">
         <CardHeader>
           <CardTitle>Tryb zaawansowany</CardTitle>
-          <CardDescription>Skalowanie i wygładzenie obrazu</CardDescription>
+          <CardDescription>Skalowanie, wygładzenie i pro‑funkcje</CardDescription>
         </CardHeader>
         <CardContent>
-          <img src={advancedImage} alt="Tryb zaawansowany — grafika Luna FPS" className="mb-4 w-full rounded-md shadow" loading="lazy" />
+          <img src={advancedImage} alt="Tryb zaawansowany — grafika Luna FPS" className="mb-4 w-full h-24 md:h-28 object-cover rounded-md shadow" loading="lazy" />
           <div className="grid gap-4 md:grid-cols-2">
             <div className="flex items-center justify-between">
-              <span>Skalowanie</span>
+              <span>Turbo Boost 🏎🔥</span>
+              <Switch aria-label="Turbo Boost" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Deep Clean 🧹</span>
+              <Switch aria-label="Deep Clean" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Silent Mode 💤</span>
+              <Switch aria-label="Silent Mode" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Skalowanie 🖼</span>
               <Switch aria-label="Skalowanie" />
             </div>
             <div className="flex items-center justify-between">
-              <span>Wygładzenie</span>
+              <span>Wygładzenie 🔧</span>
               <Switch aria-label="Wygładzenie" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Ultra Reflex ⚡</span>
+              <Switch aria-label="Ultra Reflex" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Auto DLSS/FSR Switch 🖼</span>
+              <Switch aria-label="Auto DLSS/FSR Switch" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span>FPS Stabilizer 🏎</span>
+              <Switch aria-label="FPS Stabilizer" />
             </div>
           </div>
         </CardContent>
@@ -325,8 +349,22 @@ const devPretty = useMemo(() => ({
     );
   };
 
+  const AdminCatalogPanel = () => (
+    <Card className="card-elevated glass neon-frame animate-fade-in">
+      <CardHeader>
+        <CardTitle>Katalog Admina — Optymalizacja</CardTitle>
+        <CardDescription>Symulacja paska ładowania (grafika)</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="relative h-4 w-full overflow-hidden rounded-full bg-secondary/60">
+          <div className="progress-neon-indicator progress-indeterminate absolute inset-0" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={"min-h-screen bg-background " + (testMode200 ? "f1-mode" : "")}>
       <header className="container py-6">
         <nav className="flex items-center justify-between">
           <div className="text-lg font-semibold">Luna FPS</div>
@@ -361,6 +399,18 @@ const devPretty = useMemo(() => ({
                     <Switch checked={autoDestroy} onCheckedChange={setAutoDestroy} aria-label="Tryb auto zniszczenia" />
                   </div>
                   <div className="flex items-center justify-between">
+                    <span className="text-sm">Off all settings</span>
+                    <Switch checked={offAllSettings} onCheckedChange={offAll} aria-label="Off all settings" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Tryb admina</span>
+                    {adminUnlocked ? (
+                      <Button variant="outline" size="sm" onClick={() => setAdminUnlocked(false)}>Zablokuj</Button>
+                    ) : (
+                      <Button variant="hero" size="sm" onClick={() => setPasswordOpen(true)}>Odblokuj</Button>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
                     <span className="text-sm">Język <span className="ml-1">{langFlags[language]}</span></span>
                     <Select value={language} onValueChange={setLanguage}>
                       <SelectTrigger className="w-36">
@@ -375,18 +425,6 @@ const devPretty = useMemo(() => ({
                         <SelectItem value="fr">🇫🇷 Français</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Tryb admina</span>
-                    {adminUnlocked ? (
-                      <Button variant="outline" size="sm" onClick={() => setAdminUnlocked(false)}>Zablokuj</Button>
-                    ) : (
-                      <Button variant="hero" size="sm" onClick={() => setPasswordOpen(true)}>Odblokuj</Button>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Off all settings</span>
-                    <Switch checked={offAllSettings} onCheckedChange={offAll} aria-label="Off all settings" />
                   </div>
                 </div>
               </PopoverContent>
@@ -488,12 +526,19 @@ const devPretty = useMemo(() => ({
               </div>
             )}
 
+            {developerMode && (
+              <div className="mt-10 animate-fade-in">
+                <h3 className="text-xl font-semibold mb-4">Katalog Admina</h3>
+                <AdminCatalogPanel />
+              </div>
+            )}
+
             <div className="mt-10 animate-fade-in">
               <h3 className="text-xl font-semibold mb-4">Admin</h3>
               <div className="flex flex-col gap-4">
                 <p className="text-sm text-muted-foreground">Status: {testMode200 ? "Testowy 200% aktywny" : (adminUnlocked ? "Wyłączony" : "Zablokowany — odblokuj w Ustawieniach")}</p>
                 {adminAction > 0 && adminAction < 100 && (
-                  <Progress value={adminAction} variant={testMode200 ? "danger" : "default"} glow={testMode200} />
+                  <Progress value={adminAction} variant={testMode200 ? "f1" : "neon"} glow={true} />
                 )}
                 <Button
                   variant="destructive"
@@ -517,8 +562,40 @@ const devPretty = useMemo(() => ({
                   }}
                   title={!adminUnlocked ? "Odblokuj tryb admina w Ustawieniach" : undefined}
                 >
-                  Tryb Testowy optymalizacja 200%
+                  Optymalizacja 200%
                 </Button>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Card className="card-elevated glass neon-frame">
+                    <CardHeader>
+                      <CardTitle>Podgląd logów systemowych 📜</CardTitle>
+                      <CardDescription>Podgląd logów w czasie rzeczywistym</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Button variant="outline" disabled={!adminUnlocked}>Otwórz</Button>
+                    </CardFooter>
+                  </Card>
+
+                  <Card className="card-elevated glass neon-frame">
+                    <CardHeader>
+                      <CardTitle>Test trybu awaryjnego 🛠</CardTitle>
+                      <CardDescription>Symulacja bezpiecznych ustawień</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Button variant="outline" disabled={!adminUnlocked}>Uruchom</Button>
+                    </CardFooter>
+                  </Card>
+
+                  <Card className="card-elevated glass neon-frame">
+                    <CardHeader>
+                      <CardTitle>Panel debugowania gier 🎮🛡</CardTitle>
+                      <CardDescription>Narzędzia do diagnostyki tytułów</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Button variant="outline" disabled={!adminUnlocked}>Otwórz</Button>
+                    </CardFooter>
+                  </Card>
+                </div>
               </div>
             </div>
           </section>

@@ -59,6 +59,14 @@ All colors MUST be HSL.
     --shadow-glow: 0 0 40px hsl(var(--brand) / 0.35);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Neon / F1 theme tokens */
+    --neon-red: var(--destructive);
+    --neon-white: 0 0% 100%;
+    --f1-red: 0 84% 60%;
+    --f1-orange: 24 94% 50%;
+    --f1-trail: 0 84% 60%;
+    --gradient-neon-redwhite: linear-gradient(90deg, hsl(var(--neon-white)), hsl(var(--neon-red)));
   }
 
   .dark {
@@ -135,4 +143,43 @@ All colors MUST be HSL.
 
 @layer utilities {
   .animate-gradient-slow { animation: gradient-shift 16s ease infinite; background-size: 200% 200%; }
+
+  /* Neon progress + indeterminate */
+  @keyframes progress-indeterminate {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  .progress-neon-indicator { 
+    height: 100%; width: 100%;
+    background-image: var(--gradient-neon-redwhite);
+    box-shadow: 0 0 12px hsl(var(--neon-red) / 0.8), 0 0 24px hsl(var(--neon-red) / 0.4);
+    transition: var(--transition-smooth);
+  }
+  .progress-indeterminate {
+    animation: progress-indeterminate 1.4s linear infinite; background-size: 200% 100%;
+  }
+
+  /* Glass + neon frames */
+  .glass { background: linear-gradient(180deg, hsl(var(--card) / 0.55), hsl(var(--card) / 0.35)); backdrop-filter: blur(8px); }
+  .neon-frame { border: 1.5px solid hsl(var(--neon-red)); box-shadow: 0 0 18px hsl(var(--neon-red) / 0.45), 0 0 36px hsl(var(--neon-red) / 0.25); }
+
+  /* F1 mode - aggressive red theme + speed lines */
+  .f1-mode { 
+    --brand: var(--f1-red);
+    --brand-2: var(--f1-orange);
+    --primary: var(--f1-red);
+    --accent: 0 65% 18%;
+    --gradient-primary: linear-gradient(135deg, hsl(var(--f1-red)), hsl(var(--f1-orange)));
+    --gradient-surface: radial-gradient(900px circle at 50% 0%, hsl(var(--f1-red) / 0.2), transparent 60%);
+  }
+  .f1-mode .hero-gradient { position: relative; overflow: hidden; }
+  .f1-mode .hero-gradient::after {
+    content: ""; position: absolute; inset: -20% 0 0 0; pointer-events: none;
+    background: repeating-linear-gradient( -60deg,
+      transparent 0px, transparent 18px,
+      hsl(var(--f1-red) / 0.06) 18px, hsl(var(--f1-red) / 0.06) 36px);
+    animation: speed-lines 1.2s linear infinite; 
+  }
+  @keyframes speed-lines { from { transform: translateX(0); } to { transform: translateX(-120px); } }
 }
+
