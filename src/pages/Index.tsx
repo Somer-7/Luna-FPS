@@ -67,6 +67,16 @@ const Index = () => {
   const [gamesExpanded, setGamesExpanded] = useState(false);
   const APP_VERSION = "v1.0.0";
 
+  // Game boost settings
+  const [gameBoosts, setGameBoosts] = useState({
+    turboBoost: false,
+    deepClean: false,
+    silentMode: false,
+    ultraReflex: false,
+    autoUpscaler: false,
+    fpsStabilizer: false
+  });
+
   const [offAllSettings, setOffAllSettings] = useState(false);
   const offAll = (val: boolean) => {
     setOffAllSettings(val);
@@ -317,15 +327,27 @@ const devPretty = useMemo(() => ({
           <div className="grid gap-4 md:grid-cols-2">
             <div className="flex items-center justify-between">
               <span>Turbo Boost 🏎🔥</span>
-              <Switch aria-label="Turbo Boost" />
+              <Switch 
+                checked={gameBoosts.turboBoost} 
+                onCheckedChange={(checked) => setGameBoosts(prev => ({...prev, turboBoost: checked}))}
+                aria-label="Turbo Boost" 
+              />
             </div>
             <div className="flex items-center justify-between">
               <span>Deep Clean 🧹</span>
-              <Switch aria-label="Deep Clean" />
+              <Switch 
+                checked={gameBoosts.deepClean} 
+                onCheckedChange={(checked) => setGameBoosts(prev => ({...prev, deepClean: checked}))}
+                aria-label="Deep Clean" 
+              />
             </div>
             <div className="flex items-center justify-between">
               <span>Silent Mode 💤</span>
-              <Switch aria-label="Silent Mode" />
+              <Switch 
+                checked={gameBoosts.silentMode} 
+                onCheckedChange={(checked) => setGameBoosts(prev => ({...prev, silentMode: checked}))}
+                aria-label="Silent Mode" 
+              />
             </div>
             <div className="flex items-center justify-between">
               <span>Skalowanie 🖼</span>
@@ -337,15 +359,27 @@ const devPretty = useMemo(() => ({
             </div>
             <div className="flex items-center justify-between">
               <span>Ultra Reflex ⚡</span>
-              <Switch aria-label="Ultra Reflex" />
+              <Switch 
+                checked={gameBoosts.ultraReflex} 
+                onCheckedChange={(checked) => setGameBoosts(prev => ({...prev, ultraReflex: checked}))}
+                aria-label="Ultra Reflex" 
+              />
             </div>
             <div className="flex items-center justify-between">
               <span>Auto DLSS/FSR Switch 🖼</span>
-              <Switch aria-label="Auto DLSS/FSR Switch" />
+              <Switch 
+                checked={gameBoosts.autoUpscaler} 
+                onCheckedChange={(checked) => setGameBoosts(prev => ({...prev, autoUpscaler: checked}))}
+                aria-label="Auto DLSS/FSR Switch" 
+              />
             </div>
             <div className="flex items-center justify-between">
               <span>FPS Stabilizer 🏎</span>
-              <Switch aria-label="FPS Stabilizer" />
+              <Switch 
+                checked={gameBoosts.fpsStabilizer} 
+                onCheckedChange={(checked) => setGameBoosts(prev => ({...prev, fpsStabilizer: checked}))}
+                aria-label="FPS Stabilizer" 
+              />
             </div>
           </div>
         </CardContent>
@@ -475,7 +509,7 @@ const devPretty = useMemo(() => ({
             </div>
             
             <div className="space-y-6">
-              <PerformanceMonitor />
+              <PerformanceMonitor gameBoosts={gameBoosts} />
               
               <Card className="card-elevated glass float">
                 <CardHeader>

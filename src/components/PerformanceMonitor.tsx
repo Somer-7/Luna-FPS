@@ -3,10 +3,21 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePerformance } from "@/hooks/usePerformance";
-import { Activity, Cpu, MemoryStick, Wifi } from "lucide-react";
+import { Activity, Cpu, MemoryStick, Wifi, Gamepad2 } from "lucide-react";
 
-export const PerformanceMonitor = () => {
-  const { metrics, isMonitoring, toggleMonitoring } = usePerformance();
+interface PerformanceMonitorProps {
+  gameBoosts: {
+    turboBoost: boolean;
+    deepClean: boolean;
+    silentMode: boolean;
+    ultraReflex: boolean;
+    autoUpscaler: boolean;
+    fpsStabilizer: boolean;
+  };
+}
+
+export const PerformanceMonitor = ({ gameBoosts }: PerformanceMonitorProps) => {
+  const { metrics, isMonitoring, toggleMonitoring } = usePerformance(gameBoosts);
 
   const getFPSColor = (fps: number) => {
     if (fps >= 120) return "text-green-500";
@@ -42,11 +53,31 @@ export const PerformanceMonitor = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium flex items-center gap-2">
+                <Gamepad2 className="h-4 w-4" />
+                Gra
+              </span>
+              <Badge variant={metrics.currentGame === '-' ? 'outline' : 'default'} className="font-mono text-xs">
+                {metrics.currentGame}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium flex items-center gap-2">
                 <Activity className="h-4 w-4" />
                 FPS
               </span>
-              <Badge variant="outline" className={getFPSColor(metrics.fps)}>
+              <Badge className={`${getFPSColor(metrics.fps)} font-mono`}>
                 {Math.round(metrics.fps)}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium flex items-center gap-2">
+                <Wifi className="h-4 w-4" />
+                Ping
+              </span>
+              <Badge variant="outline" className="font-mono">
+                {metrics.currentGame === '-' ? '-' : `${Math.round(metrics.ping)}ms`}
               </Badge>
             </div>
           </div>
@@ -55,9 +86,9 @@ export const PerformanceMonitor = () => {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium flex items-center gap-2">
                 <Wifi className="h-4 w-4" />
-                Ping
+                Network
               </span>
-              <Badge variant="outline">
+              <Badge variant="outline" className="font-mono">
                 {Math.round(metrics.networkLatency)}ms
               </Badge>
             </div>
