@@ -11,10 +11,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "@/hooks/use-toast";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
-import { Cpu, Monitor, MemoryStick, Zap, Gamepad2, Gauge, Rocket, Sun, Moon, Crosshair, Sword, Car, Cuboid, Settings, Download, Activity } from "lucide-react";
+import { Cpu, Monitor, MemoryStick, Zap, Gamepad2, Gauge, Rocket, Sun, Moon, Crosshair, Sword, Car, Cuboid, Settings, Download, Activity, ChevronDown, ChevronRight } from "lucide-react";
 
 
 type TaskKey = "cpu" | "gpu" | "ram" | "input" | "lowlatency" | "vsync" | "gamemode" | "cache";
@@ -63,6 +64,7 @@ const Index = () => {
   const [autoDestroy, setAutoDestroy] = useState<boolean>(() => localStorage.getItem("autoDestroy") === "1");
   useEffect(() => { localStorage.setItem("autoDestroy", autoDestroy ? "1" : "0"); }, [autoDestroy]);
   const [testMode200, setTestMode200] = useState(false);
+  const [gamesExpanded, setGamesExpanded] = useState(false);
   const APP_VERSION = "v1.0.0";
 
   const [offAllSettings, setOffAllSettings] = useState(false);
@@ -519,25 +521,73 @@ const devPretty = useMemo(() => ({
         </section>
 
         <section className="container pb-16">
-          <h2 className="text-2xl font-semibold mb-6">Optymalizacje gier</h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <GameCard g="cs2" />
-              <div className="mt-4"><AdvancedGameOptions /></div>
+          <Collapsible open={gamesExpanded} onOpenChange={setGamesExpanded}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold">Katalog optymalizacji gier</h2>
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-2 bg-background/80 backdrop-blur-sm border-2 hover:bg-accent/50 transition-all duration-200 relative z-20"
+                >
+                  {gamesExpanded ? (
+                    <>
+                      <ChevronDown className="h-4 w-4" />
+                      Zwiń katalog
+                    </>
+                  ) : (
+                    <>
+                      <ChevronRight className="h-4 w-4" />
+                      Rozwiń katalog gier
+                    </>
+                  )}
+                </Button>
+              </CollapsibleTrigger>
             </div>
-            <div>
-              <GameCard g="fortnite" />
-              <div className="mt-4"><AdvancedGameOptions /></div>
-            </div>
-            <div>
-              <GameCard g="gtav" />
-              <div className="mt-4"><AdvancedGameOptions /></div>
-            </div>
-            <div>
-              <GameCard g="roblox" />
-              <div className="mt-4"><AdvancedGameOptions /></div>
-            </div>
-          </div>
+            
+            <CollapsibleContent className="space-y-6 animate-fade-in">
+              <div className="p-6 rounded-lg bg-card/60 backdrop-blur-sm border border-border/50 shadow-lg relative z-10">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Crosshair className="h-5 w-5" />
+                      Strzelanki
+                    </h3>
+                    <GameCard g="cs2" />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Sword className="h-5 w-5" />
+                      Battle Royale
+                    </h3>
+                    <GameCard g="fortnite" />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Car className="h-5 w-5" />
+                      Akcja / Świat otwarty
+                    </h3>
+                    <GameCard g="gtav" />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Cuboid className="h-5 w-5" />
+                      Sandbox / Kreatywne
+                    </h3>
+                    <GameCard g="roblox" />
+                  </div>
+                </div>
+                
+                <div className="mt-8 pt-6 border-t border-border/30">
+                  <h3 className="text-lg font-semibold mb-4">Tryb zaawansowany</h3>
+                  <AdvancedGameOptions />
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </section>
 
         <section className="container pb-16">
