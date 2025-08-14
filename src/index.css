@@ -181,5 +181,27 @@ All colors MUST be HSL.
     animation: speed-lines 1.2s linear infinite; 
   }
   @keyframes speed-lines { from { transform: translateX(0); } to { transform: translateX(-120px); } }
+
+  /* Enhanced animations and effects */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsl(var(--brand) / 0.3); }
+    50% { box-shadow: 0 0 40px hsl(var(--brand) / 0.6), 0 0 60px hsl(var(--brand) / 0.3); }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+  .float { animation: float 3s ease-in-out infinite; }
+  
+  .text-glow { text-shadow: 0 0 20px hsl(var(--brand) / 0.8); }
+  
+  /* Improved mobile experience */
+  @media (max-width: 768px) {
+    .card-elevated { transform: none !important; }
+    .card-elevated:hover { transform: none !important; }
+  }
 }
 

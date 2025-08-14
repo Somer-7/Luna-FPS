@@ -12,7 +12,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Cpu, Monitor, MemoryStick, Zap, Gamepad2, Gauge, Rocket, Sun, Moon, Crosshair, Sword, Car, Cuboid, Settings } from "lucide-react";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+import { Cpu, Monitor, MemoryStick, Zap, Gamepad2, Gauge, Rocket, Sun, Moon, Crosshair, Sword, Car, Cuboid, Settings, Download, Activity } from "lucide-react";
 
 
 type TaskKey = "cpu" | "gpu" | "ram" | "input" | "lowlatency" | "vsync" | "gamemode" | "cache";
@@ -367,7 +369,10 @@ const devPretty = useMemo(() => ({
     <div className={"min-h-screen bg-background " + (testMode200 ? "f1-mode" : "")}>
       <header className="container py-6">
         <nav className="flex items-center justify-between">
-          <div className="text-lg font-semibold">Luna FPS</div>
+          <div className={"text-lg font-semibold " + (testMode200 ? "text-glow" : "")}>
+            Luna FPS
+            {testMode200 && <span className="ml-2 text-sm text-red-400">⚡ 200%</span>}
+          </div>
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
@@ -439,13 +444,14 @@ const devPretty = useMemo(() => ({
         <section className="relative overflow-hidden">
           <div className="hero-gradient animate-gradient-slow">
             <div className="container relative z-10 py-16 md:py-24">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                FPS Booster & 0 Delay Optimizer
+              <h1 className={"text-4xl md:text-5xl font-bold tracking-tight mb-4 " + (testMode200 ? "text-glow animate-pulse" : "")}>
+                Luna FPS Gaming Optimizer
+                {testMode200 && <div className="text-lg text-red-400 mt-2">⚡ TRYB 200% AKTYWNY ⚡</div>}
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-                Zwiększ FPS i obniż opóźnienia jednym kliknięciem. Inteligentne
-                profile optymalizacji CPU/GPU/RAM oraz tryby 0 Delay.
+                Profesjonalna optymalizacja gier: zwiększ FPS, zredukuj opóźnienia, maksymalizuj wydajność.
               </p>
+              <InstallPrompt />
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Button variant="hero" size="lg" onClick={runAll}>Uruchom pełną optymalizację</Button>
                 <Button variant="outline" size="lg" onClick={() => toast({ title: "Tryb testowy", description: "Aplikacja web symuluje operacje systemowe." })}>Tryb testowy</Button>
@@ -456,11 +462,59 @@ const devPretty = useMemo(() => ({
         </section>
 
         <section className="container py-12 md:py-16">
-          <h2 className="text-2xl font-semibold mb-6">FPS Booster</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            <ActionCard k="cpu" />
-            <ActionCard k="gpu" />
-            <ActionCard k="ram" />
+          <div className="grid gap-6 lg:grid-cols-4">
+            <div className="lg:col-span-3">
+              <h2 className="text-2xl font-semibold mb-6">FPS Booster</h2>
+              <div className="grid gap-6 md:grid-cols-3">
+                <ActionCard k="cpu" />
+                <ActionCard k="gpu" />
+                <ActionCard k="ram" />
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <PerformanceMonitor />
+              
+              <Card className="card-elevated glass float">
+                <CardHeader>
+                  <CardTitle className="text-base">Szybkie akcje</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    variant="hero" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={runAll}
+                    disabled={Object.values(tasks).some(v => v > 0 && v < 100)}
+                  >
+                    <Rocket className="h-4 w-4 mr-2" />
+                    Boost All
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => offAll(!offAllSettings)}
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    {offAllSettings ? "Włącz" : "Wyłącz"} wszystko
+                  </Button>
+                  
+                  {testMode200 && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="w-full pulse-glow"
+                      onClick={() => setTestMode200(false)}
+                    >
+                      <Activity className="h-4 w-4 mr-2" />
+                      Wyłącz tryb 200%
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </section>
 
@@ -628,6 +682,17 @@ const devPretty = useMemo(() => ({
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <footer className="py-6 border-t">
+          <div className="container text-center space-y-2">
+            <div className="text-sm text-muted-foreground">
+              Luna FPS Gaming Optimizer {APP_VERSION} - Strona w trybie beta
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Profesjonalne narzędzie do optymalizacji gier | Błędy mogą być nieuniknione
+            </div>
+          </div>
+        </footer>
 
       </main>
     </div>
